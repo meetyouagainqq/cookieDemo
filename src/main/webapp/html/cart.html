@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../js/vue.js" type="text/javascript"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.27.2/axios.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/qs/6.11.0/qs.js"></script>
+</head>
+<style>
+    td > img {
+        width: 100px;
+        height: 100px;
+    }
+</style>
+<body>
+<div>
+    <div id="app">
+        <table border="1">
+            <thead>
+            <tr>
+                <th>商品编号</th>
+                <th>商品信息</th>
+                <th>商品价格</th>
+                <th>商品备注</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="(product,index) in productList">
+                <td>{{product.id}}</td>
+                <td>
+                    <img :src="product.img"><br>
+                    {{product.name}}
+                </td>
+                <td>{{product.price}}</td>
+                <td>
+                    <input type="button" value="-" :disabled="diffStatus(product.num)" @click="diffNum(index)">
+                    {{product.num}}
+                    <input type="button" value="+" :disabled="addStatus(product.num)" @click="addNum(index)">
+                </td>
+                <td><input type="button" value="删除" @click="del(index)"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+<script>
+    new Vue({
+        el: "#app",
+        data() {
+            return {
+                productList: []
+            }
+        },
+        methods: {
+            diffNum(index) {
+                console.log(this.productList[index]);
+                let newNum = this.productList[index].num - 1;
+                this.productList[index].num = newNum;
+                let productKey = "product_" + this.productList[index].id;
+                document.cookie = productKey + "=" + newNum + ";path=/;expires=" + new Date("2022-12-12 12:12:12");
+            },
+            addNum(index) {
+                let newNum = this.productList[index].num + 1;
+                this.productList[index].num = newNum;
+                let productKey = "product_" + this.productList[index].id;
+                document.cookie = productKey + "=" + newNum + ";path=/;expires=" + new Date("2022-12-12 12:12:12");
+            },
+            diffStatus(num) {
+                if (num == 1) {
+                    return true;
+                }
+                return false;
+            },
+            addStatus(num) {
+                if (num == 10) {
+                    return true;
+                }
+                return false;
+            },
+            del(index) {
+                let productKey = "product_" + this.productList[index].id;
+                document.cookie = productKey + "=1;path=/;expires=" + new Date("2000-12-12 12:12:12");
+                this.productList.splice(index,1);
+            }
+        },
+
+        mounted() {
+            axios.get("http://localhost:8080/getCartList")
+                .then(response => {
+                    console.log(response.data);
+                    this.productList = response.data.data;
+                })
+        }
+    });
+</script>
+</html>
